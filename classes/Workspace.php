@@ -13,11 +13,24 @@ class Workspace{
 	}
 	
 	public function addToMessageBuffer($message, $highlight = false){
-		if(is_string($message)){
-			$messageBuffer[] = $message;			
-		}else if(is_array($message)){
-			
+		if(is_array($message)){
+			foreach($message as $line){
+				$this->messageBuffer[] = $line;
+			}
+		} else {
+			$this->messageBuffer[] = $message;
 		}
+
+		$this->messageBuffer[] = '---';
+	}
+	
+	public function dumpBuffer($echo = true){
+		if($echo){
+			foreach($this->messageBuffer as $line){
+				echo $line . "\n";
+			}
+		}
+		$this->messageBuffer = array();
 	}
 
 }
