@@ -1,36 +1,44 @@
 <?php 
 class Workspace{
-	protected $path;
-	protected $repoType;
+	/**
+	 * @var string
+	 */
 	protected $url;
+	/**
+	 * @var string
+	 */
+	protected $path;
+	/**
+	 * @var MessageLog
+	 */
+	protected $messageLog;
+	/**
+	 * @var CommandClient
+	 */
+	protected $commandClient;
+	/**
+	 * @var string
+	 */
+	protected $repoType;
+	/**
+	 * @var boolean
+	 */
 	protected $verbose;
-	protected $messageBuffer = array();
 	
-	public function __construct($url, $path, $type, $verbose){
+	/**
+	 * @param string $url
+	 * @param string $path
+	 * @param MessageLog $messageLog
+	 * @param CommandClient $commandClient
+	 * @param string $type
+	 * @param boolean $verbose
+	 */
+	public function __construct($url, $path, $messageLog, $commandClient, $type, $verbose){
 		$this->url = $url;
 		$this->path = $path;
+		$this->messageLog = $messageLog;
+		$this->commandClient = $commandClient;		
 		$this->repoType = $type;
-	}
-	
-	public function addToMessageBuffer($message, $highlight = false){
-		if(is_array($message)){
-			foreach($message as $line){
-				$this->messageBuffer[] = $line;
-			}
-		} else {
-			$this->messageBuffer[] = $message;
-		}
-
-		$this->messageBuffer[] = '---';
-	}
-	
-	public function dumpBuffer($echo = true){
-		if($echo){
-			foreach($this->messageBuffer as $line){
-				echo $line . "\n";
-			}
-		}
-		$this->messageBuffer = array();
 	}
 
 }

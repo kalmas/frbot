@@ -5,32 +5,35 @@ class WorkspaceSvn extends Workspace implements IRepositoryRepo {
 	private $ticketBase = 'branches';
 	private $releaseBase = 'releases';
 	
-	public function __construct($url, $path, $verbose = false){
-		parent::__construct($url, $path, self::TYPE, $verbose);
+	/**
+	 * @param string $url
+	 * @param string $path
+	 * @param MessageLog $messageLog
+	 * @param CommandClient $commandClient
+	 * @param boolean $verbose
+	 */
+	public function __construct($url, $path, $messageLog, $commandClient, $verbose = false){
+		parent::__construct($url, $path, $messageLog, $commandClient, self::TYPE, $verbose);
 		if(!$this->verbose){
 			$this->cmdAppend = ' 2>&1';
 		}
 	}
 	
 	/**
-	 * 
+	 * Determine if provided svn path exists
 	 * @param string $url
 	 * @return boolean
 	 */
 	private function pathExists($path){
-		$this->addToMessageBuffer("Checking for existance of {$path}");
+		$this->messageLog->write("Checking for existance of {$path}");
 		$cmd = "svn ls {$this->url}/{$path} {$this->cmdAppend}";
-		$this->addToMessageBuffer($cmd);
-		$returnVal = 0;
-		exec($cmd, $response, $returnVal);
-		
-		// If $returnVal == 0, it means no errors occured, which means we found the branch
-		if($returnVal === 0){
-			$this->addToMessageBuffer("{$path} found");
-			$this->addToMessageBuffer($response);
+		$success = $this->commandClient->execute($cmd);
+
+		if($success){
+			$this->messageLog->write("{$path} found");
 			return true;
 		} else {
-			$this->addToMessageBuffer("{$path} NOT found");
+			$this->messageLog->write("{$path} NOT found");
 			return false;
 		}
 	}
@@ -38,7 +41,7 @@ class WorkspaceSvn extends Workspace implements IRepositoryRepo {
 	/* (non-PHPdoc)
 	 * @see IRepositoryRepo::ticketExists()
 	 */
-	public function ticketExists($ticketName) {
+	public function ticketExists($ticketName){
 		$path = "{$this->ticketBase}/{$ticketName}";
 		return $this->pathExists($path);
 	}
@@ -52,15 +55,15 @@ class WorkspaceSvn extends Workspace implements IRepositoryRepo {
 	}
 
 	/**
-	 * @param string $url
+	 * Create branch by copying from $basePath
+	 * @param string $path
+	 * @param string $basePath
 	 */
 	private function createBranch($path, $basePath = 'trunk'){
-		$this->addToMessageBuffer("Creating {$path} from {$basePath}");
+		$this->messageLog->write("Creating {$path} from {$basePath}");
 		$cmd = "svn copy {$this->url}/{$basePath} {$this->url}/{$path}"
 				. " -m 'Creation of {$path}' {$this->cmdAppend}";
-		$this->addToMessageBuffer($cmd);
-		exec($cmd, $response);
-		$this->addToMessageBuffer($response);
+		return $this->commandClient->execute($cmd);
 	}
 	
 	/* (non-PHPdoc)
@@ -103,5 +106,4 @@ class WorkspaceSvn extends Workspace implements IRepositoryRepo {
 		
 	}
 
-	
 }
